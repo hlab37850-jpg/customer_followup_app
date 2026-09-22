@@ -1,3 +1,4 @@
+name: customer_followup_app
 
 environment:
   sdk: '^3.4.0'
