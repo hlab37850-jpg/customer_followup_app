@@ -20,7 +20,7 @@ void main() {
   });
 
   test('Task completed state is persisted in map', () {
-    final task = Task(
+    final task = const Task(
       id: 3,
       description: 'اختبار',
       completed: true,
