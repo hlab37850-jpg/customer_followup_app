@@ -3,20 +3,33 @@ class Customer {
   final String name;
   final String phone;
   final String company;
+  final String notes;
+  final String createdAt;
 
-  Customer({this.id, required this.name, required this.phone, required this.company});
+  const Customer({
+    this.id,
+    required this.name,
+    required this.phone,
+    required this.company,
+    this.notes = '',
+    required this.createdAt,
+  });
 
   Map<String, dynamic> toMap() => {
-    'id': id,
-    'name': name,
-    'phone': phone,
-    'company': company,
-  };
+        if (id != null) 'id': id,
+        'name': name,
+        'phone': phone,
+        'company': company,
+        'notes': notes,
+        'created_at': createdAt,
+      };
 
   factory Customer.fromMap(Map<String, dynamic> map) => Customer(
-    id: map['id'],
-    name: map['name'],
-    phone: map['phone'],
-    company: map['company'],
-  );
+        id: map['id'] as int?,
+        name: map['name'] as String? ?? '',
+        phone: map['phone'] as String? ?? '',
+        company: map['company'] as String? ?? '',
+        notes: map['notes'] as String? ?? '',
+        createdAt: map['created_at'] as String? ?? '',
+      );
 }

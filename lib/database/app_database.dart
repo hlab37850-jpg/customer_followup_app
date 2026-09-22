@@ -1,18 +1,79 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
-  static Future<Database> open() async {
-    final dbPath = await getDatabasesPath();
-    return openDatabase(
-      join(dbPath, 'customer_followup.db'),
-      onCreate: (db, version) async {
-        await db.execute('CREATE TABLE customers(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, company TEXT)');
-        await db.execute('CREATE TABLE followups(id INTEGER PRIMARY KEY AUTOINCREMENT, customerId INTEGER, note TEXT, date TEXT)');
-        await db.execute('CREATE TABLE appointments(id INTEGER PRIMARY KEY AUTOINCREMENT, customerId INTEGER, dateTime TEXT, description TEXT)');
-        await db.execute('CREATE TABLE tasks(id INTEGER PRIMARY KEY AUTOINCREMENT, customerId INTEGER, description TEXT, completed INTEGER)');
+  AppDatabase._();
+  static final AppDatabase instance = AppDatabase._();
+
+  Database? _db;
+
+  Future<Database> get database async {
+    if (_db != null) return _db!;
+    final path = join(await getDatabasesPath(), 'customer_followup.db');
+
+    _db = await openDatabase(
+      path,
+      version: 2,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
       },
-      version: 1,
+      onCreate: (db, version) async {
+        await _createTables(db);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE followups ADD COLUMN status TEXT NOT NULL DEFAULT "pending"',
+          );
+        }
+      },
     );
+
+    return _db!;
+  }
+
+  Future<void> _createTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE customers(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        phone TEXT NOT NULL DEFAULT '',
+        company TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE followups(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER NOT NULL,
+        note TEXT NOT NULL,
+        date TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE appointments(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER NOT NULL,
+        date_time TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE tasks(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER,
+        description TEXT NOT NULL,
+        due_date TEXT,
+        completed INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL
+      )
+    ''');
   }
 }
