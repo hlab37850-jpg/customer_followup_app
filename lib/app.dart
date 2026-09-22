@@ -8,6 +8,11 @@ class CustomerFollowupApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF1565C0),
+      brightness: Brightness.light,
+    );
+
     return ChangeNotifierProvider(
       create: (_) => AppProvider()..initialize(),
       child: MaterialApp(
@@ -16,9 +21,23 @@ class CustomerFollowupApp extends StatelessWidget {
         locale: const Locale('ar'),
         theme: ThemeData(
           useMaterial3: true,
-          colorSchemeSeed: Colors.indigo,
+          colorScheme: scheme,
           fontFamily: 'sans',
+          inputDecorationTheme: const InputDecorationTheme(
+            border: OutlineInputBorder(),
+            filled: true,
+          ),
+          cardTheme: const CardThemeData(
+            elevation: 1,
+            margin: EdgeInsets.symmetric(vertical: 5),
+          ),
         ),
+        builder: (context, child) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: child ?? const SizedBox(),
+          );
+        },
         home: const DashboardScreen(),
       ),
     );

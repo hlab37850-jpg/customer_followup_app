@@ -7,6 +7,7 @@ import '../repositories/customer_repository.dart';
 import '../repositories/appointment_repository.dart';
 import '../repositories/followup_repository.dart';
 import '../repositories/task_repository.dart';
+import '../services/notification_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final customersRepo = CustomerRepository();
@@ -22,7 +23,10 @@ class AppProvider extends ChangeNotifier {
   bool loading = false;
   String? error;
 
-  Future<void> initialize() async => refresh();
+  Future<void> initialize() async {
+    await NotificationService.instance.initialize();
+    await refresh();
+  }
 
   Future<void> refresh() async {
     loading = true;
@@ -58,32 +62,127 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> addAppointment(Appointment item) async {
-    await appointmentsRepo.insert(item);
+    final id = await appointmentsRepo.insert(item);
+
+    if (item.dateTime.isAfter(DateTime.now())) {
+      await NotificationService.instance.schedule(
+        id: 100000 + id,
+        title: 'موعد',
+        body: _customerName(item.customerId) +
+            (item.description.isEmpty ? '' : ' - ${item.description}'),
+        dateTime: item.dateTime,
+      );
+    }
+
+    await refresh();
+  }
+
+  Future<void> updateAppointment(Appointment item) async {
+    await appointmentsRepo.update(item);
+
+    if (item.id != null) {
+      await NotificationService.instance.cancel(100000 + item.id!);
+
+      if (item.dateTime.isAfter(DateTime.now())) {
+        await NotificationService.instance.schedule(
+          id: 100000 + item.id!,
+          title: 'موعد',
+          body: _customerName(item.customerId) +
+              (item.description.isEmpty ? '' : ' - ${item.description}'),
+          dateTime: item.dateTime,
+        );
+      }
+    }
+
     await refresh();
   }
 
   Future<void> deleteAppointment(int id) async {
+    await NotificationService.instance.cancel(100000 + id);
     await appointmentsRepo.delete(id);
     await refresh();
   }
 
   Future<void> addFollowup(Followup item) async {
-    await followupsRepo.insert(item);
+    final id = await followupsRepo.insert(item);
+
+    if (item.date.isAfter(DateTime.now())) {
+      await NotificationService.instance.schedule(
+        id: 200000 + id,
+        title: 'متابعة عميل',
+        body: '${_customerName(item.customerId)} - ${item.note}',
+        dateTime: item.date,
+      );
+    }
+
+    await refresh();
+  }
+
+  Future<void> updateFollowup(Followup item) async {
+    await followupsRepo.update(item);
+
+    if (item.id != null) {
+      await NotificationService.instance.cancel(200000 + item.id!);
+
+      if (item.date.isAfter(DateTime.now()) &&
+          item.status != 'done') {
+        await NotificationService.instance.schedule(
+          id: 200000 + item.id!,
+          title: 'متابعة عميل',
+          body: '${_customerName(item.customerId)} - ${item.note}',
+          dateTime: item.date,
+        );
+      }
+    }
+
     await refresh();
   }
 
   Future<void> deleteFollowup(int id) async {
+    await NotificationService.instance.cancel(200000 + id);
     await followupsRepo.delete(id);
     await refresh();
   }
 
   Future<void> addTask(Task item) async {
-    await tasksRepo.insert(item);
+    final id = await tasksRepo.insert(item);
+
+    if (item.dueDate != null &&
+        item.dueDate!.isAfter(DateTime.now())) {
+      await NotificationService.instance.schedule(
+        id: 300000 + id,
+        title: 'مهمة',
+        body: item.description,
+        dateTime: item.dueDate!,
+      );
+    }
+
+    await refresh();
+  }
+
+  Future<void> updateTask(Task item) async {
+    await tasksRepo.update(item);
+
+    if (item.id != null) {
+      await NotificationService.instance.cancel(300000 + item.id!);
+
+      if (!item.completed &&
+          item.dueDate != null &&
+          item.dueDate!.isAfter(DateTime.now())) {
+        await NotificationService.instance.schedule(
+          id: 300000 + item.id!,
+          title: 'مهمة',
+          body: item.description,
+          dateTime: item.dueDate!,
+        );
+      }
+    }
+
     await refresh();
   }
 
   Future<void> toggleTask(Task item) async {
-    await tasksRepo.update(
+    await updateTask(
       Task(
         id: item.id,
         customerId: item.customerId,
@@ -92,11 +191,18 @@ class AppProvider extends ChangeNotifier {
         completed: !item.completed,
       ),
     );
-    await refresh();
   }
 
   Future<void> deleteTask(int id) async {
+    await NotificationService.instance.cancel(300000 + id);
     await tasksRepo.delete(id);
     await refresh();
+  }
+
+  String _customerName(int id) {
+    for (final c in customers) {
+      if (c.id == id) return c.name;
+    }
+    return 'عميل';
   }
 }

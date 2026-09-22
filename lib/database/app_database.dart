@@ -3,13 +3,20 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   AppDatabase._();
+
   static final AppDatabase instance = AppDatabase._();
 
   Database? _db;
 
+  Future<String> get databasePath async {
+    final path = await getDatabasesPath();
+    return join(path, 'customer_followup.db');
+  }
+
   Future<Database> get database async {
     if (_db != null) return _db!;
-    final path = join(await getDatabasesPath(), 'customer_followup.db');
+
+    final path = await databasePath;
 
     _db = await openDatabase(
       path,
@@ -23,13 +30,18 @@ class AppDatabase {
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute(
-            'ALTER TABLE followups ADD COLUMN status TEXT NOT NULL DEFAULT "pending"',
+            "ALTER TABLE followups ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'",
           );
         }
       },
     );
 
     return _db!;
+  }
+
+  Future<void> close() async {
+    await _db?.close();
+    _db = null;
   }
 
   Future<void> _createTables(Database db) async {
