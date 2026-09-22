@@ -34,7 +34,7 @@ class TaskScreen extends StatelessWidget {
                 return Card(
                   child: ListTile(
                     leading: Checkbox(
-                      value: item.completed,
+            initialValue: item.completed,
                       onChanged: (_) =>
                           p.toggleTask(item),
                     ),
@@ -63,11 +63,11 @@ class TaskScreen extends StatelessWidget {
                       },
                       itemBuilder: (_) => const [
                         PopupMenuItem(
-                          value: 'edit',
+            initialValue: 'edit',
                           child: Text('تعديل'),
                         ),
                         PopupMenuItem(
-                          value: 'delete',
+            initialValue: 'delete',
                           child: Text('حذف'),
                         ),
                       ],
@@ -112,18 +112,18 @@ class TaskScreen extends StatelessWidget {
             child: Column(
               children: [
                 DropdownButtonFormField<int?>(
-                  value: customerId,
+            initialValue: customerId,
                   decoration: const InputDecoration(
                     labelText: 'العميل (اختياري)',
                   ),
                   items: [
                     const DropdownMenuItem<int?>(
-                      value: null,
+            initialValue: null,
                       child: Text('بدون عميل'),
                     ),
                     ...p.customers.map(
                       (c) => DropdownMenuItem<int?>(
-                        value: c.id,
+            initialValue: c.id,
                         child: Text(c.name),
                       ),
                     ),

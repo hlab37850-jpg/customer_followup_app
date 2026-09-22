@@ -53,11 +53,11 @@ class AppointmentScreen extends StatelessWidget {
                       },
                       itemBuilder: (_) => const [
                         PopupMenuItem(
-                          value: 'edit',
+            initialValue: 'edit',
                           child: Text('تعديل'),
                         ),
                         PopupMenuItem(
-                          value: 'delete',
+            initialValue: 'delete',
                           child: Text('حذف'),
                         ),
                       ],
@@ -100,12 +100,12 @@ class AppointmentScreen extends StatelessWidget {
             child: Column(
               children: [
                 DropdownButtonFormField<int>(
-                  value: customerId,
+            initialValue: customerId,
                   decoration: const InputDecoration(labelText: 'العميل'),
                   items: p.customers
                       .map(
                         (c) => DropdownMenuItem(
-                          value: c.id!,
+            initialValue: c.id!,
                           child: Text(c.name),
                         ),
                       )

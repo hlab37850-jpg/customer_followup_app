@@ -43,7 +43,7 @@ class NotificationService {
     if (!enabled || dateTime.isBefore(DateTime.now())) return;
 
     final details = NotificationDetails(
-      android: AndroidNotificationDetails(
+      android: const AndroidNotificationDetails(
         'customer_followup',
         'متابعة العملاء',
         channelDescription: 'تنبيهات المواعيد والمتابعات والمهام',

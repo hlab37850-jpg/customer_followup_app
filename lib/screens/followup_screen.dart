@@ -66,11 +66,11 @@ class FollowupScreen extends StatelessWidget {
                       },
                       itemBuilder: (_) => [
                         const PopupMenuItem(
-                          value: 'edit',
+            initialValue: 'edit',
                           child: Text('تعديل'),
                         ),
                         PopupMenuItem(
-                          value: 'done',
+            initialValue: 'done',
                           child: Text(
                             f.status == 'done'
                                 ? 'إرجاع إلى معلقة'
@@ -78,7 +78,7 @@ class FollowupScreen extends StatelessWidget {
                           ),
                         ),
                         const PopupMenuItem(
-                          value: 'delete',
+            initialValue: 'delete',
                           child: Text('حذف'),
                         ),
                       ],
@@ -119,12 +119,12 @@ class FollowupScreen extends StatelessWidget {
             child: Column(
               children: [
                 DropdownButtonFormField<int>(
-                  value: customerId,
+            initialValue: customerId,
                   decoration: const InputDecoration(labelText: 'العميل'),
                   items: p.customers
                       .map(
                         (c) => DropdownMenuItem(
-                          value: c.id!,
+            initialValue: c.id!,
                           child: Text(c.name),
                         ),
                       )
@@ -179,15 +179,15 @@ class FollowupScreen extends StatelessWidget {
                   },
                 ),
                 DropdownButtonFormField<String>(
-                  value: status,
+            initialValue: status,
                   decoration: const InputDecoration(labelText: 'الحالة'),
                   items: const [
                     DropdownMenuItem(
-                      value: 'pending',
+            initialValue: 'pending',
                       child: Text('معلقة'),
                     ),
                     DropdownMenuItem(
-                      value: 'done',
+            initialValue: 'done',
                       child: Text('مكتملة'),
                     ),
                   ],
