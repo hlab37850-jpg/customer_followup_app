@@ -1,0 +1,47 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+
+      - name: Fix Gradle project automatically
+        run: |
+          rm -rf customer_followup_app
+          flutter create -t app customer_followup_app
+          cp -r lib customer_followup_app/
+          cp pubspec.yaml customer_followup_app/
+
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: customer_followup_app
+
+      - name: Run analysis
+        run: flutter analyze
+        working-directory: customer_followup_app
+
+      - name: Run tests
+        run: flutter test
+        working-directory: customer_followup_app
+
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: customer_followup_app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-followup-release
+          path: customer_followup_app/build/app/outputs/flutter-apk/app-release.apk
